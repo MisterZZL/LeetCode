@@ -15,7 +15,9 @@ logging.basicConfig(level=logging.INFO)
 def store_girl_img(girl_url, store_girl_dir):
     # 把girl_url的单个小姐姐放入store_girl_dir文件夹
     girl_text = requests.get(girl_url).text
-    girl_src = BeautifulSoup(girl_text, 'lxml').find(class_='main-image').find('img')['src']
+    print(girl_text)
+    girl_src = BeautifulSoup(girl_text, 'lxml').find("div",class_='content-pic').find("a")
+    print(girl_src)
     # 此处加headers是为防反爬虫，如果不加会响应403，没有权限
     headers = {
         'Referer': girl_url,
@@ -35,9 +37,11 @@ def store_page_grils(href, store_girl_dir):
     # 得到小姐姐的数量
     max_page_num = soup.find('div', class_='content-page').find_all('a')[-2].get_text()
     max_page_num = int(max_page_num)
+    # print(max_page_num)
 
     for page_num in range(1, max_page_num + 1):
         girl_url = f'{href}/{str(page_num)}'
+        print(girl_url,"----------------------------")      #http://www.mm131.com/mingxing/2016_3.html
         store_girl_img(girl_url, store_girl_dir)
 
 
@@ -48,15 +52,18 @@ def main():
     home_html = requests.get(url)
     home_html.encoding = "gbk"
     home_text = home_html.text
+    #print(home_text)
     # 得到小姐姐们的链接标签
-    ahref_list = BeautifulSoup(home_text, 'lxml').find_all('dd')
+    ahref_list = BeautifulSoup(home_text, 'lxml').find("div",class_="main").find('dd').find_all("a")
     print(ahref_list)
     for ahref in ahref_list:
         # ahref 是bs4.element.Tag实例
-        girlname = ahref.get_text()  # 获取a标签的文本内容：如 18岁MM久久Aimee：可以甜美也可以狂野的御姐养成记
-        # print(girlname)
-        print(type(ahref))
-        href = ahref["href"]  # 取出a标签的href属性
+        girlname = ahref.get_text()  # 获取a标签的文本内容
+        print(girlname)
+        #print(type(ahref))
+        href = ahref.attrs["href"]
+        print(href)
+  # 取出a标签的href属性
         # print(href)
         store_girl_dir = os.path.join(store_dir, girlname)  # 拼接得到放该小姐的房间号，即存放美女的文件夹
         os.makedirs(store_girl_dir, exist_ok=True)
